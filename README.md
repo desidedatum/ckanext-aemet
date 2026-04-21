@@ -9,7 +9,7 @@ This extension provides custom visualization tools for weather prediction data f
 ## Requirements
 
 - **CKAN**: 2.11.0 or higher
-- **Python**: 3.7, 3.8, 3.9, or 3.10
+- **Python**: 3.10 or higher
 - **PostgreSQL**: 12 or higher
 - **Docker & Docker Compose**: For development environment
 
@@ -19,7 +19,7 @@ This extension provides custom visualization tools for weather prediction data f
 
 1. **Clone the repository** (if not already done):
    ```bash
-   cd /home/oriol/projects/altres/ckanext-aemet
+   cd /path/to/ckanext-aemet
    ```
 
 2. **Create Python virtual environment**:
@@ -34,27 +34,28 @@ This extension provides custom visualization tools for weather prediction data f
    pip install -e .
    ```
 
-4. **Generate a secure SECRET_KEY**:
+4. **Generate a secure SECRET_KEY and create `.env`**:
    ```bash
-   python -c 'import secrets; print(secrets.token_hex(32))'
+   python -c 'import secrets; print("CKAN_SECRET_KEY=" + secrets.token_hex(32))' > .env
    ```
 
-5. **Update docker-compose.yml**:
-   - Replace `changeme-generate-a-secure-key-here` with the generated SECRET_KEY
-
-6. **Start Docker containers**:
+5. **Start Docker containers**:
    ```bash
    docker-compose up -d
    ```
 
-7. **Wait for services to initialize** (this may take a few minutes on first run):
+6. **Wait for services to initialize** (this may take a few minutes on first run):
    ```bash
    docker-compose logs -f ckan
    ```
 
-8. **Access CKAN**:
+7. **Access CKAN**:
    - Open your browser to: http://localhost:5000
-   - Default admin credentials will be shown in logs on first run
+
+8. **Create a sysadmin user**:
+   ```bash
+   docker exec -it ckan-aemet ckan sysadmin add admin email=admin@localhost
+   ```
 
 ### Manual Installation (Production)
 
@@ -91,11 +92,12 @@ Currently, the extension works out-of-the-box with default settings. Future vers
 
 ### Loading Weather Data
 
-The `tmp/prediccion.json` file contains sample AEMET weather prediction data. To use it:
+Sample AEMET weather prediction data is available in `ckanext/aemet/tests/fixtures/prediccion.json`. To use it:
 
 1. **Create a dataset** in CKAN through the web interface
 2. **Add a resource** and upload the `prediccion.json` file
-3. **Select the AEMET visualization** when viewing the resource (future feature)
+3. **Set the resource format** to `aemet-json` (required for the view to appear)
+4. **Select the AEMET visualization** when viewing the resource
 
 ### Data Format
 
@@ -137,10 +139,7 @@ ckanext-aemet/
 │       └── tests/             # Unit and integration tests
 ├── docker/
 │   └── init-db.sh            # Database initialization
-├── tmp/
-│   └── prediccion.json       # Sample weather data
 ├── docker-compose.yml         # Docker development environment
-├── setup.py                   # Python package configuration
 ├── requirements.txt           # Development dependencies
 └── README.md
 ```
@@ -183,11 +182,11 @@ docker-compose down -v
 - [x] Docker Compose development environment
 - [x] Basic plugin registration
 
-### Phase 2: Visualization (Next)
-- [ ] Implement custom resource view for weather data
-- [ ] Create temperature chart component
-- [ ] Create precipitation probability visualization
-- [ ] Add wind direction/speed display
+### Phase 2: Visualization ✅
+- [x] Implement custom resource view for weather data
+- [x] Create temperature chart component
+- [x] Create precipitation probability visualization
+- [x] Add wind direction/speed display
 
 ### Phase 3: Data Processing
 - [ ] AEMET API integration

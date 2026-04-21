@@ -43,7 +43,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 (function() {
-  var resourceUrl = '{{ resource.url }}';
+  var resourceUrl = {{ resource.url|tojson }};
 
   fetch(resourceUrl)
     .then(function(response) {
@@ -185,7 +185,9 @@
 
   function renderDetails(days) {
     var container = document.getElementById('aemet-details');
-    var html = '<div class="aemet-days-grid">';
+    container.innerHTML = '';
+    var grid = document.createElement('div');
+    grid.classList.add('aemet-days-grid');
 
     days.forEach(function(day) {
       var date = new Date(day.fecha);
@@ -195,29 +197,77 @@
       var wind = day.viento && day.viento[0] ? day.viento[0] : {};
       var humidity = day.humedadRelativa;
 
-      html += '<div class="aemet-day-card">';
-      html += '  <div class="aemet-day-date">' + formatDateShort(date) + '</div>';
-      html += '  <div class="aemet-day-icon" data-sky="' + skyCode + '">' + getSkyEmoji(skyCode) + '</div>';
-      html += '  <div class="aemet-day-sky">' + sky + '</div>';
-      html += '  <div class="aemet-day-temps">';
-      html += '    <span class="aemet-temp-max">' + day.temperatura.maxima + '\u00b0</span>';
-      html += '    <span class="aemet-temp-sep">/</span>';
-      html += '    <span class="aemet-temp-min">' + day.temperatura.minima + '\u00b0</span>';
-      html += '  </div>';
+      var card = document.createElement('div');
+      card.classList.add('aemet-day-card');
+
+      var dateEl = document.createElement('div');
+      dateEl.classList.add('aemet-day-date');
+      dateEl.textContent = formatDateShort(date);
+      card.appendChild(dateEl);
+
+      var iconEl = document.createElement('div');
+      iconEl.classList.add('aemet-day-icon');
+      iconEl.setAttribute('data-sky', skyCode);
+      iconEl.textContent = getSkyEmoji(skyCode);
+      card.appendChild(iconEl);
+
+      var skyEl = document.createElement('div');
+      skyEl.classList.add('aemet-day-sky');
+      skyEl.textContent = sky;
+      card.appendChild(skyEl);
+
+      var tempsEl = document.createElement('div');
+      tempsEl.classList.add('aemet-day-temps');
+
+      var maxSpan = document.createElement('span');
+      maxSpan.classList.add('aemet-temp-max');
+      maxSpan.textContent = day.temperatura.maxima + '\u00b0';
+      tempsEl.appendChild(maxSpan);
+
+      var sepSpan = document.createElement('span');
+      sepSpan.classList.add('aemet-temp-sep');
+      sepSpan.textContent = '/';
+      tempsEl.appendChild(sepSpan);
+
+      var minSpan = document.createElement('span');
+      minSpan.classList.add('aemet-temp-min');
+      minSpan.textContent = day.temperatura.minima + '\u00b0';
+      tempsEl.appendChild(minSpan);
+
+      card.appendChild(tempsEl);
+
       if (precip !== null && precip !== '' && precip > 0) {
-        html += '  <div class="aemet-day-precip"><i class="fa fa-tint"></i> ' + precip + '%</div>';
+        var precipEl = document.createElement('div');
+        precipEl.classList.add('aemet-day-precip');
+        var precipIcon = document.createElement('i');
+        precipIcon.classList.add('fa', 'fa-tint');
+        precipEl.appendChild(precipIcon);
+        precipEl.appendChild(document.createTextNode(' ' + precip + '%'));
+        card.appendChild(precipEl);
       }
       if (wind.velocidad) {
-        html += '  <div class="aemet-day-wind"><i class="fa fa-flag"></i> ' + wind.direccion + ' ' + wind.velocidad + ' km/h</div>';
+        var windEl = document.createElement('div');
+        windEl.classList.add('aemet-day-wind');
+        var windIcon = document.createElement('i');
+        windIcon.classList.add('fa', 'fa-flag');
+        windEl.appendChild(windIcon);
+        windEl.appendChild(document.createTextNode(' ' + wind.direccion + ' ' + wind.velocidad + ' km/h'));
+        card.appendChild(windEl);
       }
       if (humidity) {
-        html += '  <div class="aemet-day-humidity"><i class="fa fa-tint"></i> ' + humidity.minima + '%\u2013' + humidity.maxima + '%</div>';
+        var humEl = document.createElement('div');
+        humEl.classList.add('aemet-day-humidity');
+        var humIcon = document.createElement('i');
+        humIcon.classList.add('fa', 'fa-tint');
+        humEl.appendChild(humIcon);
+        humEl.appendChild(document.createTextNode(' ' + humidity.minima + '%\u2013' + humidity.maxima + '%'));
+        card.appendChild(humEl);
       }
-      html += '</div>';
+
+      grid.appendChild(card);
     });
 
-    html += '</div>';
-    container.innerHTML = html;
+    container.appendChild(grid);
   }
 
   function getFirstValue(arr, key) {
@@ -227,7 +277,7 @@
 
   function getSkyEmoji(code) {
     if (!code) return '';
-    var num = parseInt(code);
+    var num = parseInt(code, 10);
     if (isNaN(num)) return '';
     if (num <= 11) return '\u2600\uFE0F';
     if (num <= 15) return '\u26C5';

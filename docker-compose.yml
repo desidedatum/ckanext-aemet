@@ -14,7 +14,7 @@ services:
       CKAN_DATASTORE_READ_URL: postgresql://datastore_ro:datastore@db/datastore
       CKAN_SITE_URL: http://localhost:5000
       CKAN_SITE_ID: default
-      CKAN__SECRET_KEY: "e58dede1c4ac98d7c3fd73d9cf6a1d325aa4f454abf169a7d2c5776f3e3b6d12"
+      CKAN__SECRET_KEY: ${CKAN_SECRET_KEY}
       CKAN_SOLR_URL: http://solr:8983/solr/ckan
       CKAN_REDIS_URL: redis://redis:6379/0
       CKAN_STORAGE_PATH: /var/lib/ckan
