@@ -1,7 +1,6 @@
 # Development requirements
+# These are also defined in pyproject.toml [project.optional-dependencies]
+# Install via: pip install -e ".[dev]"
 pytest>=7.0.0
 pytest-cov>=3.0.0
 pytest-mock>=3.10.0
-
-# Extension dependencies
-# (Add specific dependencies as needed for visualization features)
