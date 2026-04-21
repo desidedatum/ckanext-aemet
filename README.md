@@ -8,9 +8,9 @@ This extension provides custom visualization tools for weather prediction data f
 
 ## Requirements
 
-- **CKAN**: 2.11.0 or higher
+- **CKAN**: 2.10 or higher
 - **Python**: 3.10 or higher
-- **PostgreSQL**: 12 or higher
+- **PostgreSQL**: 14 or higher
 - **Docker & Docker Compose**: For development environment
 
 ## Installation
@@ -22,40 +22,25 @@ This extension provides custom visualization tools for weather prediction data f
    cd /path/to/ckanext-aemet
    ```
 
-2. **Create Python virtual environment**:
+2. **Create `.env` file** from the example and generate a secure key:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
+   cp .env.example .env
+   python3 -c 'import secrets; print("CKAN_SECRET_KEY=" + secrets.token_hex(32))' > .env
    ```
 
-3. **Install development dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   pip install -e .
-   ```
-
-4. **Generate a secure SECRET_KEY and create `.env`**:
-   ```bash
-   python -c 'import secrets; print("CKAN_SECRET_KEY=" + secrets.token_hex(32))' > .env
-   ```
-
-5. **Start Docker containers**:
+3. **Start Docker containers**:
    ```bash
    docker-compose up -d
    ```
 
-6. **Wait for services to initialize** (this may take a few minutes on first run):
+4. **Wait for services to initialize** (this may take a few minutes on first run):
    ```bash
    docker-compose logs -f ckan
    ```
 
-7. **Access CKAN**:
+5. **Access CKAN**:
    - Open your browser to: http://localhost:5000
-
-8. **Create a sysadmin user**:
-   ```bash
-   docker exec -it ckan-aemet ckan sysadmin add admin email=admin@localhost
-   ```
+   - A sysadmin user (`admin` / `admin123`) is created automatically via environment variables
 
 ### Manual Installation (Production)
 
@@ -99,6 +84,8 @@ Sample AEMET weather prediction data is available in `ckanext/aemet/tests/fixtur
 3. **Set the resource format** to `aemet-json` (required for the view to appear)
 4. **Select the AEMET visualization** when viewing the resource
 
+> **Note:** The resource data is fetched client-side by the browser, so the resource must be publicly accessible (not restricted to logged-in users only).
+
 ### Data Format
 
 The extension expects JSON data in AEMET's prediction format:
@@ -117,8 +104,12 @@ The extension expects JSON data in AEMET's prediction format:
 ### Running Tests
 
 ```bash
-# Activate virtual environment
+# Create and activate a virtual environment (outside Docker)
+python3 -m venv venv
 source venv/bin/activate
+
+# Install development dependencies
+pip install -e ".[dev]"
 
 # Run tests
 pytest ckanext/aemet/tests/
@@ -134,8 +125,6 @@ ckanext-aemet/
 │       ├── __init__.py
 │       ├── plugin.py          # Main plugin class
 │       ├── templates/          # Jinja2 templates
-│       ├── public/            # Static assets (CSS, JS)
-│       ├── logic/             # Custom actions and auth functions
 │       └── tests/             # Unit and integration tests
 ├── docker/
 │   └── init-db.sh            # Database initialization
