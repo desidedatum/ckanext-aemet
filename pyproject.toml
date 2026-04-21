@@ -52,9 +52,9 @@ namespaces = true
 
 [tool.setuptools.package-data]
 "ckanext.aemet" = [
-    "templates/**/*.html",
-    "public/**/*.css",
-    "public/**/*.js",
+    "templates/*/*.html",
+    "public/*.css",
+    "public/*.js",
 ]
 
 [tool.pytest.ini_options]
