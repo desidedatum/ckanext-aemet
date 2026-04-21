@@ -1,0 +1,256 @@
+<style>
+.aemet-container { padding: 15px 0; }
+.aemet-loading { text-align: center; padding: 40px; color: #999; font-size: 16px; }
+.aemet-error { text-align: center; padding: 30px; color: #e74c3c; background: #fdf7f7; border: 1px solid #f5c6cb; border-radius: 4px; }
+.aemet-header { margin-bottom: 20px; }
+.aemet-header h3 { margin: 0 0 5px 0; font-size: 20px; color: #333; }
+.aemet-subtitle { margin: 0; color: #777; font-size: 14px; }
+.aemet-chart-wrapper { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 25px; }
+.aemet-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+.aemet-day-card { text-align: center; padding: 12px 8px; border: 1px solid #e8e8e8; border-radius: 6px; background: #fafafa; font-size: 13px; }
+.aemet-day-date { font-weight: bold; margin-bottom: 6px; color: #333; font-size: 12px; }
+.aemet-day-icon { font-size: 28px; margin: 4px 0; }
+.aemet-day-sky { color: #666; margin-bottom: 6px; font-size: 11px; line-height: 1.3; min-height: 28px; }
+.aemet-day-temps { margin: 6px 0; font-size: 16px; font-weight: bold; }
+.aemet-temp-max { color: #e74c3c; }
+.aemet-temp-sep { color: #ccc; margin: 0 2px; }
+.aemet-temp-min { color: #3498db; }
+.aemet-day-precip, .aemet-day-wind, .aemet-day-humidity { color: #777; margin-top: 4px; font-size: 11px; }
+.aemet-day-precip i, .aemet-day-wind i, .aemet-day-humidity i { margin-right: 3px; font-size: 10px; }
+@media (max-width: 992px) { .aemet-days-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 600px) { .aemet-days-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<div id="aemet-visualization" class="aemet-container">
+  <div id="aemet-loading" class="aemet-loading">
+    <i class="fa fa-spinner fa-spin"></i> {{ _('Loading weather data...') }}
+  </div>
+  <div id="aemet-error" class="aemet-error" style="display: none;">
+    <p>{{ _('Unable to load AEMET weather data. Make sure the resource is in AEMET prediction format.') }}</p>
+  </div>
+  <div id="aemet-content" style="display: none;">
+    <div class="aemet-header">
+      <h3 id="aemet-title"></h3>
+      <p id="aemet-subtitle" class="aemet-subtitle"></p>
+    </div>
+    <div class="aemet-chart-wrapper">
+      <canvas id="aemet-temperature-chart"></canvas>
+    </div>
+    <div id="aemet-details" class="aemet-details"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+(function() {
+  var resourceUrl = '{{ resource.url }}';
+
+  fetch(resourceUrl)
+    .then(function(response) {
+      if (!response.ok) throw new Error('Failed to fetch resource');
+      return response.json();
+    })
+    .then(function(data) {
+      if (!Array.isArray(data) || !data.length || !data[0].prediccion || !data[0].prediccion.dia) {
+        throw new Error('Invalid AEMET format');
+      }
+      renderVisualization(data[0]);
+    })
+    .catch(function(error) {
+      document.getElementById('aemet-loading').style.display = 'none';
+      document.getElementById('aemet-error').style.display = 'block';
+      console.error('AEMET visualization error:', error);
+    });
+
+  function renderVisualization(data) {
+    document.getElementById('aemet-loading').style.display = 'none';
+    document.getElementById('aemet-content').style.display = 'block';
+
+    document.getElementById('aemet-title').textContent = data.nombre + ' \u2014 ' + data.provincia;
+    document.getElementById('aemet-subtitle').textContent = '{{ _("Forecast generated") }} ' + formatDate(data.elaborado);
+
+    var days = data.prediccion.dia;
+    renderChart(days);
+    renderDetails(days);
+  }
+
+  function renderChart(days) {
+    var labels = [];
+    var maxTemps = [];
+    var minTemps = [];
+
+    days.forEach(function(day) {
+      var date = new Date(day.fecha);
+      labels.push(formatDateShort(date));
+      maxTemps.push(day.temperatura.maxima);
+      minTemps.push(day.temperatura.minima);
+    });
+
+    var ctx = document.getElementById('aemet-temperature-chart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: '{{ _("Max") }} (\u00b0C)',
+            data: maxTemps,
+            borderColor: '#e74c3c',
+            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+            pointBackgroundColor: '#c0392b',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            borderWidth: 2.5,
+            tension: 0,
+            fill: false
+          },
+          {
+            label: '{{ _("Min") }} (\u00b0C)',
+            data: minTemps,
+            borderColor: '#3498db',
+            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+            pointBackgroundColor: '#2980b9',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            borderWidth: 2.5,
+            tension: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2.5,
+        layout: {
+          padding: { top: 10, right: 20, bottom: 10, left: 10 }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 20,
+              font: { size: 13 }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            titleFont: { size: 14 },
+            bodyFont: { size: 13 },
+            padding: 12,
+            callbacks: {
+              afterBody: function(tooltipItems) {
+                var idx = tooltipItems[0].dataIndex;
+                var day = days[idx];
+                var lines = [];
+                var sky = getFirstValue(day.estadoCielo, 'descripcion');
+                var precip = getFirstValue(day.probPrecipitacion, 'value');
+                var wind = day.viento && day.viento[0] ? day.viento[0] : null;
+                var humidity = day.humedadRelativa;
+                if (sky) lines.push('{{ _("Sky:") }} ' + sky);
+                if (precip !== null && precip !== '') lines.push('{{ _("Precipitation:") }} ' + precip + '%');
+                if (wind) lines.push('{{ _("Wind:") }} ' + wind.direccion + ' ' + wind.velocidad + ' km/h');
+                if (humidity) lines.push('{{ _("Humidity:") }} ' + humidity.minima + '% \u2013 ' + humidity.maxima + '%');
+                if (day.uvMax) lines.push('UV: ' + day.uvMax);
+                return lines;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: '{{ _("Temperature (\u00b0C)") }}',
+              font: { size: 13 }
+            },
+            grid: { color: 'rgba(0, 0, 0, 0.06)' },
+            ticks: {
+              callback: function(value) { return value + '\u00b0'; }
+            }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 12 } }
+          }
+        }
+      }
+    });
+  }
+
+  function renderDetails(days) {
+    var container = document.getElementById('aemet-details');
+    var html = '<div class="aemet-days-grid">';
+
+    days.forEach(function(day) {
+      var date = new Date(day.fecha);
+      var sky = getFirstValue(day.estadoCielo, 'descripcion') || '';
+      var skyCode = getFirstValue(day.estadoCielo, 'value') || '';
+      var precip = getFirstValue(day.probPrecipitacion, 'value');
+      var wind = day.viento && day.viento[0] ? day.viento[0] : {};
+      var humidity = day.humedadRelativa;
+
+      html += '<div class="aemet-day-card">';
+      html += '  <div class="aemet-day-date">' + formatDateShort(date) + '</div>';
+      html += '  <div class="aemet-day-icon" data-sky="' + skyCode + '">' + getSkyEmoji(skyCode) + '</div>';
+      html += '  <div class="aemet-day-sky">' + sky + '</div>';
+      html += '  <div class="aemet-day-temps">';
+      html += '    <span class="aemet-temp-max">' + day.temperatura.maxima + '\u00b0</span>';
+      html += '    <span class="aemet-temp-sep">/</span>';
+      html += '    <span class="aemet-temp-min">' + day.temperatura.minima + '\u00b0</span>';
+      html += '  </div>';
+      if (precip !== null && precip !== '' && precip > 0) {
+        html += '  <div class="aemet-day-precip"><i class="fa fa-tint"></i> ' + precip + '%</div>';
+      }
+      if (wind.velocidad) {
+        html += '  <div class="aemet-day-wind"><i class="fa fa-flag"></i> ' + wind.direccion + ' ' + wind.velocidad + ' km/h</div>';
+      }
+      if (humidity) {
+        html += '  <div class="aemet-day-humidity"><i class="fa fa-tint"></i> ' + humidity.minima + '%\u2013' + humidity.maxima + '%</div>';
+      }
+      html += '</div>';
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function getFirstValue(arr, key) {
+    if (!arr || !arr.length) return null;
+    return arr[0][key];
+  }
+
+  function getSkyEmoji(code) {
+    if (!code) return '';
+    var num = parseInt(code);
+    if (isNaN(num)) return '';
+    if (num <= 11) return '\u2600\uFE0F';
+    if (num <= 15) return '\u26C5';
+    if (num <= 19) return '\u2601\uFE0F';
+    if (num <= 25) return '\uD83C\uDF27\uFE0F';
+    if (num <= 30) return '\u26C8\uFE0F';
+    if (num <= 40) return '\u2744\uFE0F';
+    if (num <= 50) return '\uD83C\uDF28\uFE0F';
+    return '';
+  }
+
+  function formatDate(isoString) {
+    var d = new Date(isoString);
+    return d.toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function formatDateShort(date) {
+    var weekday = date.toLocaleDateString('es-ES', { weekday: 'short' });
+    var dayMonth = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    return weekday.charAt(0).toUpperCase() + weekday.slice(1) + ' ' + dayMonth;
+  }
+})();
+</script>

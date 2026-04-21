@@ -1,0 +1,88 @@
+services:
+  ckan:
+    build: .
+    container_name: ckan-aemet
+    depends_on:
+      - db
+      - solr
+      - redis
+    ports:
+      - "5000:5000"
+    environment:
+      CKAN_SQLALCHEMY_URL: postgresql://ckan:ckan@db/ckan
+      CKAN_DATASTORE_WRITE_URL: postgresql://ckan:ckan@db/datastore
+      CKAN_DATASTORE_READ_URL: postgresql://datastore_ro:datastore@db/datastore
+      CKAN_SITE_URL: http://localhost:5000
+      CKAN_SITE_ID: default
+      CKAN__SECRET_KEY: "e58dede1c4ac98d7c3fd73d9cf6a1d325aa4f454abf169a7d2c5776f3e3b6d12"
+      CKAN_SOLR_URL: http://solr:8983/solr/ckan
+      CKAN_REDIS_URL: redis://redis:6379/0
+      CKAN_STORAGE_PATH: /var/lib/ckan
+      CKAN__UPLOADS__ENABLED: "true"
+      CKAN__MAX_RESOURCE_SIZE: 100
+      CKAN__MAX_IMAGE_SIZE: 10
+      CKAN__PLUGINS: "envvars stats text_view image_view datastore aemet"
+      CKAN_SYSADMIN_NAME: admin
+      CKAN_SYSADMIN_PASSWORD: admin123
+      CKAN_SYSADMIN_EMAIL: admin@localhost
+    volumes:
+      - ckan_storage:/var/lib/ckan
+    networks:
+      - ckan-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/3/action/status_show"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  db:
+    image: postgres:14-alpine
+    container_name: postgres-ckan
+    environment:
+      POSTGRES_USER: ckan
+      POSTGRES_PASSWORD: ckan
+      POSTGRES_DB: ckan
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - ckan-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ckan"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  solr:
+    image: ckan/ckan-solr:2.11-solr9
+    container_name: solr-ckan
+    volumes:
+      - solr_data:/var/solr
+    networks:
+      - ckan-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8983/solr/ckan/admin/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-ckan
+    networks:
+      - ckan-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ckan_storage:
+  pg_data:
+  solr_data:
+
+networks:
+  ckan-network:
+    driver: bridge
