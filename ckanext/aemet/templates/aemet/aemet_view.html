@@ -6,6 +6,7 @@
 .aemet-header h3 { margin: 0 0 5px 0; font-size: 20px; color: #333; }
 .aemet-subtitle { margin: 0; color: #777; font-size: 14px; }
 .aemet-chart-wrapper { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px; margin-bottom: 25px; }
+.aemet-chart-wrapper canvas { min-height: 260px; }
 .aemet-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
 .aemet-day-card { text-align: center; padding: 12px 8px; border: 1px solid #e8e8e8; border-radius: 6px; background: #fafafa; font-size: 13px; }
 .aemet-day-date { font-weight: bold; margin-bottom: 6px; color: #333; font-size: 12px; }
@@ -125,8 +126,7 @@
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
-        aspectRatio: 2.5,
+        maintainAspectRatio: false,
         layout: {
           padding: { top: 10, right: 20, bottom: 10, left: 10 }
         },
@@ -171,6 +171,7 @@
               font: { size: 13 }
             },
             grid: { color: 'rgba(0, 0, 0, 0.06)' },
+            grace: '10%',
             ticks: {
               callback: function(value) { return value + '\u00b0'; }
             }
