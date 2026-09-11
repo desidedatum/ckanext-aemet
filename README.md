@@ -8,7 +8,7 @@ This extension provides custom visualization tools for weather prediction data f
 
 ## Requirements
 
-- **CKAN**: 2.10 or higher
+- **CKAN**: 2.11 or 2.12 (tested against 2.11.6 and 2.12.0)
 - **Python**: 3.10 or higher
 - **PostgreSQL**: 14 or higher
 - **Docker & Docker Compose**: For development environment
@@ -25,8 +25,11 @@ This extension provides custom visualization tools for weather prediction data f
 2. **Create `.env` file** from the example and generate a secure key:
    ```bash
    cp .env.example .env
-   python3 -c 'import secrets; print("CKAN_SECRET_KEY=" + secrets.token_hex(32))' > .env
+   python3 -c 'import secrets; print("CKAN_SECRET_KEY=" + secrets.token_hex(32))' >> .env
    ```
+   > Note the `>>` (append). The generated key is added after the placeholder and overrides it —
+   > when a key appears twice in `.env`, the last value wins. Using a single `>` would overwrite the
+   > file and discard the `CKAN_VERSION` setting.
 
 3. **Start Docker containers**:
    ```bash

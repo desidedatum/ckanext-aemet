@@ -1,4 +1,5 @@
-FROM ckan/ckan-base:2.11
+ARG CKAN_VERSION=2.12
+FROM ckan/ckan-base:${CKAN_VERSION}
 
 USER root
 

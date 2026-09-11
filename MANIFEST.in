@@ -1,2 +1,1 @@
 recursive-include ckanext/aemet/templates *.html
-recursive-include ckanext/aemet/public *.css *.js

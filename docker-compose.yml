@@ -1,6 +1,9 @@
 services:
   ckan:
-    build: .
+    build:
+      context: .
+      args:
+        CKAN_VERSION: ${CKAN_VERSION:-2.12}
     container_name: ckan-aemet
     depends_on:
       - db
@@ -55,7 +58,7 @@ services:
       retries: 5
 
   solr:
-    image: ckan/ckan-solr:2.11-solr9
+    image: ckan/ckan-solr:${CKAN_VERSION:-2.12}-solr9
     container_name: solr-ckan
     volumes:
       - solr_data:/var/solr
