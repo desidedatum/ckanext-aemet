@@ -8,10 +8,21 @@ This extension provides custom visualization tools for weather prediction data f
 
 ## Requirements
 
-- **CKAN**: 2.11 or 2.12 (tested against 2.11.6 and 2.12.0)
-- **Python**: 3.10 or higher
+- **CKAN**: 2.11 up to 2.12 (see compatibility table below)
+- **Python**: 3.10 or higher (3.10–3.12 on CKAN 2.11; 3.10+ on CKAN 2.12)
 - **PostgreSQL**: 14 or higher
 - **Docker & Docker Compose**: For development environment
+
+### CKAN compatibility
+
+| CKAN version    | Supported |
+|-----------------|-----------|
+| 2.10 and older  | No        |
+| 2.11            | Yes       |
+| 2.12            | Yes       |
+
+The Docker development environment uses CKAN 2.12 by default. To run it against 2.11, set
+`CKAN_VERSION=2.11` in `.env` and rebuild with `docker-compose build`.
 
 ## Installation
 

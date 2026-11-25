@@ -39,3 +39,6 @@ Thumbs.db
 
 # Temporary files
 tmp/
+
+# Local review notes
+REVIEW.md

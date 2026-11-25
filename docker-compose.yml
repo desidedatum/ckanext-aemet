@@ -17,11 +17,11 @@ services:
       CKAN_DATASTORE_READ_URL: postgresql://datastore_ro:datastore@db/datastore
       CKAN_SITE_URL: http://localhost:5000
       CKAN_SITE_ID: default
-      CKAN__SECRET_KEY: ${CKAN_SECRET_KEY}
+      CKAN___SECRET_KEY: ${CKAN_SECRET_KEY}
       CKAN_SOLR_URL: http://solr:8983/solr/ckan
       CKAN_REDIS_URL: redis://redis:6379/0
       CKAN_STORAGE_PATH: /var/lib/ckan
-      CKAN__UPLOADS__ENABLED: "true"
+      CKAN__UPLOADS_ENABLED: "true"
       CKAN__MAX_RESOURCE_SIZE: 100
       CKAN__MAX_IMAGE_SIZE: 10
       CKAN__PLUGINS: "envvars stats text_view image_view datastore aemet"

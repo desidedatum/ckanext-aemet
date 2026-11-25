@@ -22,7 +22,7 @@ class AemetPlugin(plugins.SingletonPlugin):
 
     def can_view(self, data_dict):
         resource = data_dict.get("resource", {})
-        fmt = resource.get("format", "").lower()
+        fmt = (resource.get("format") or "").lower()
         return fmt == "aemet-json"
 
     def setup_template_variables(self, context, data_dict):

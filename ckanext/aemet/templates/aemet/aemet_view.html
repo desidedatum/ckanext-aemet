@@ -69,7 +69,7 @@
     document.getElementById('aemet-content').style.display = 'block';
 
     document.getElementById('aemet-title').textContent = data.nombre + ' \u2014 ' + data.provincia;
-    document.getElementById('aemet-subtitle').textContent = '{{ _("Forecast generated") }} ' + formatDate(data.elaborado);
+    document.getElementById('aemet-subtitle').textContent = {{ _("Forecast generated")|tojson }} + ' ' + formatDate(data.elaborado);
 
     var days = data.prediccion.dia;
     renderChart(days);
@@ -95,7 +95,7 @@
         labels: labels,
         datasets: [
           {
-            label: '{{ _("Max") }} (\u00b0C)',
+            label: {{ _("Max")|tojson }} + ' (\u00b0C)',
             data: maxTemps,
             borderColor: '#e74c3c',
             backgroundColor: 'rgba(231, 76, 60, 0.1)',
@@ -109,7 +109,7 @@
             fill: false
           },
           {
-            label: '{{ _("Min") }} (\u00b0C)',
+            label: {{ _("Min")|tojson }} + ' (\u00b0C)',
             data: minTemps,
             borderColor: '#3498db',
             backgroundColor: 'rgba(52, 152, 219, 0.1)',
@@ -153,10 +153,10 @@
                 var precip = getFirstValue(day.probPrecipitacion, 'value');
                 var wind = day.viento && day.viento[0] ? day.viento[0] : null;
                 var humidity = day.humedadRelativa;
-                if (sky) lines.push('{{ _("Sky:") }} ' + sky);
-                if (precip !== null && precip !== '') lines.push('{{ _("Precipitation:") }} ' + precip + '%');
-                if (wind) lines.push('{{ _("Wind:") }} ' + wind.direccion + ' ' + wind.velocidad + ' km/h');
-                if (humidity) lines.push('{{ _("Humidity:") }} ' + humidity.minima + '% \u2013 ' + humidity.maxima + '%');
+                if (sky) lines.push({{ _("Sky:")|tojson }} + ' ' + sky);
+                if (precip !== null && precip !== '') lines.push({{ _("Precipitation:")|tojson }} + ' ' + precip + '%');
+                if (wind) lines.push({{ _("Wind:")|tojson }} + ' ' + wind.direccion + ' ' + wind.velocidad + ' km/h');
+                if (humidity) lines.push({{ _("Humidity:")|tojson }} + ' ' + humidity.minima + '% \u2013 ' + humidity.maxima + '%');
                 if (day.uvMax) lines.push('UV: ' + day.uvMax);
                 return lines;
               }
@@ -167,7 +167,7 @@
           y: {
             title: {
               display: true,
-              text: '{{ _("Temperature (\u00b0C)") }}',
+              text: {{ _("Temperature (\u00b0C)")|tojson }},
               font: { size: 13 }
             },
             grid: { color: 'rgba(0, 0, 0, 0.06)' },
